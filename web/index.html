@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prompt the Pitch</title>
+  <meta name="description" content="Explainable, personalised match intelligence from synthetic football events, written by AI agents on Microsoft Foundry.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%2315171c'/><rect x='6' y='9' width='20' height='14' fill='none' stroke='white' stroke-width='2'/><line x1='16' y1='9' x2='16' y2='23' stroke='white' stroke-width='2'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wordmark">Prompt the Pitch</div>
+    <div class="controls">
+      <label class="field"><span data-i18n="match">Match</span><select id="match-select"></select></label>
+      <label class="field"><span data-i18n="agents">Agents</span>
+        <select id="source-select">
+          <option value="cached" data-i18n="recorded">Recorded run</option>
+          <option value="live" data-i18n="live">Live on Foundry</option>
+        </select>
+      </label>
+      <label class="field"><span data-i18n="speed">Speed</span>
+        <select id="speed-select">
+          <option value="1">1×</option>
+          <option value="10">10×</option>
+          <option value="30" selected>30×</option>
+          <option value="60">60×</option>
+          <option value="120">120×</option>
+        </select>
+      </label>
+      <button id="play-btn" class="primary">Kick off</button>
+      <button id="new-match-btn" class="link" data-i18n="newMatch">New match</button>
+      <button id="listen-btn" class="link" aria-pressed="false" data-i18n="listen">Listen</button>
+    </div>
+    <p class="note mode-note" id="mode-note"></p>
+  </header>
+
+  <main class="layout">
+    <section class="main-col">
+      <div class="scorebug" id="scorebug">
+        <div class="team home"><span class="swatch"></span><span class="name" data-i18n="home">Home</span></div>
+        <div class="score"><span id="score-home">0</span><span class="dash">–</span><span id="score-away">0</span></div>
+        <div class="team away"><span class="name" data-i18n="away">Away</span><span class="swatch"></span></div>
+        <div class="clock" id="clock">00'</div>
+      </div>
+      <div class="winbar" id="winbar" hidden>
+        <span class="seg home"></span><span class="seg draw"></span><span class="seg away"></span>
+      </div>
+      <div class="under-bug">
+        <p class="phase" id="phase" data-i18n="prematch">Pre-match</p>
+        <p class="winbar-legend" id="winbar-legend"></p>
+      </div>
+
+      <div class="stage" id="stage">
+        <svg id="pitch" viewBox="-6.17 -2.74 117.54 73.67" preserveAspectRatio="none" role="img" aria-label="Pitch with the live ball position"></svg>
+        <div class="graphic-panel" id="graphic-panel" hidden></div>
+        <div class="lower-third" id="overlay" aria-live="polite"></div>
+      </div>
+      <p class="live-line" id="live-line"></p>
+
+      <div class="catchup" id="catchup" hidden></div>
+
+      <div class="analysis">
+        <section>
+          <h2 data-i18n="shotsPanel">Shots</h2>
+          <svg id="shots-map" class="mini-pitch" viewBox="-6.17 -2.74 117.54 73.67" preserveAspectRatio="none" role="img" aria-label="Shot map"></svg>
+          <p class="note" data-i18n="shotsNote">Size = chance quality (xG). Filled = goal.</p>
+        </section>
+        <section>
+          <div class="section-head">
+            <h2 data-i18n="networkPanel">Passing network</h2>
+            <div class="seg-buttons" id="network-team"></div>
+          </div>
+          <svg id="network-map" class="mini-pitch" viewBox="-6.17 -2.74 117.54 73.67" preserveAspectRatio="none" role="img" aria-label="Passing network"></svg>
+          <p class="note" data-i18n="networkNote">Average positions on the ball and the most used passing links.</p>
+        </section>
+      </div>
+
+      <div class="section-head">
+        <h2 data-i18n="keyMoments">Key moments</h2>
+        <span class="links">
+          <a id="obs-link" class="link small" target="_blank" rel="noopener" data-i18n="obsView" hidden>OBS overlay</a>
+          <a id="stadium-link" class="link small" target="_blank" rel="noopener" data-i18n="stadiumView" hidden>3D stadium</a>
+          <a id="cue-link" class="link small" target="_blank" rel="noopener" data-i18n="cueSheet">Overlay cue sheet (JSON)</a>
+        </span>
+      </div>
+      <div class="feed" id="feed">
+        <p class="empty" data-i18n="emptyStart">Choose a match and press Kick off.</p>
+      </div>
+    </section>
+
+    <aside class="side-col">
+      <section>
+        <h2 data-i18n="viewer">Viewer</h2>
+        <div class="roles" id="roles" role="radiogroup" aria-label="Viewer"></div>
+        <div class="langs" id="langs" role="radiogroup" aria-label="Language"></div>
+        <p class="note" id="lang-note"></p>
+      </section>
+
+      <section id="stands-panel">
+        <div class="section-head">
+          <h2 data-i18n="stands">The stands</h2>
+          <button id="invite-btn" class="link small" data-i18n="invite" disabled>Invite friends</button>
+        </div>
+        <p class="note" id="room-note"></p>
+        <div id="stands-support"></div>
+        <h3 data-i18n="crowdVsAi">Crowd vs AI</h3>
+        <div id="predictions"></div>
+        <h3 data-i18n="proposals">Fans' dugout</h3>
+        <div id="proposals"></div>
+        <details id="propose">
+          <summary data-i18n="proposeTitle">Propose a change</summary>
+          <form id="propose-form" class="propose-form">
+            <select id="pr-team" aria-label="Team"></select>
+            <select id="pr-kind" aria-label="Change">
+              <option value="substitution" data-i18n="kindSub">Substitution</option>
+              <option value="tactic" data-i18n="kindTactic">Tactic</option>
+            </select>
+            <select id="pr-off" aria-label="Off"></select>
+            <select id="pr-on" aria-label="On"></select>
+            <select id="pr-tactic" aria-label="Tactic" hidden></select>
+            <button class="primary" data-i18n="proposeButton">Propose</button>
+          </form>
+        </details>
+        <h3 data-i18n="rate">Rate the match</h3>
+        <div id="rating"></div>
+      </section>
+
+      <section id="focus-panel">
+        <h2 data-i18n="follow">Follow a player</h2>
+        <select id="follow-select" aria-label="Player to follow" disabled></select>
+        <p class="note" data-i18n="followHint">A ring on the pitch, live stats and a check-in every 15 minutes.</p>
+        <div id="focus-card"></div>
+      </section>
+
+      <section>
+        <h2 data-i18n="winProb">Win probability</h2>
+        <svg id="winprob-chart" viewBox="0 0 300 80" preserveAspectRatio="none" role="img" aria-label="Win probability over time"></svg>
+        <p class="note" id="winprob-note"></p>
+      </section>
+
+      <section>
+        <h2 data-i18n="stats">Match stats</h2>
+        <div class="stats" id="stats"><p class="note" data-i18n="statsLater">Available at kick-off.</p></div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2 data-i18n="momentum">Momentum</h2>
+          <span class="note" id="tempo"></span>
+        </div>
+        <svg id="momentum" viewBox="0 0 300 80" preserveAspectRatio="none" role="img" aria-label="Momentum over time"></svg>
+        <div class="momentum-legend note"><span id="mom-home"></span><span id="mom-away"></span></div>
+      </section>
+
+      <section>
+        <h2 data-i18n="ask">Ask the analyst</h2>
+        <form id="chat-form" class="chat-form">
+          <input id="chat-input" data-i18n-placeholder="askPlaceholder" placeholder="Why is the home side struggling?" autocomplete="off">
+          <button class="primary" data-i18n="askButton">Ask</button>
+        </form>
+        <div class="chat" id="chat"></div>
+      </section>
+
+      <section>
+        <details id="how">
+          <summary><h2 data-i18n="how">How it's produced</h2> <span class="note" id="agent-summary"></span></summary>
+          <p class="note" data-i18n="howText">For each key moment, a Tactical Explainer and a Commentator run in parallel on Microsoft Foundry.</p>
+          <div class="agents" id="agents"></div>
+        </details>
+      </section>
+    </aside>
+  </main>
+
+  <dialog id="match-dialog">
+    <form method="dialog" id="match-form" class="dialog-form">
+      <h2 data-i18n="newMatchTitle">New synthetic match</h2>
+      <label><span data-i18n="home">Home</span> <select name="home" id="nm-home"></select></label>
+      <label><span data-i18n="away">Away</span> <select name="away" id="nm-away"></select></label>
+      <label><span data-i18n="seed">Seed</span> <input name="seed" type="number" value="7" min="0"></label>
+      <div class="dialog-actions">
+        <button value="cancel" class="link" data-i18n="cancel">Cancel</button>
+        <button value="ok" class="primary" data-i18n="generate">Generate</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer class="footer note" id="footer"></footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

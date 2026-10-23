@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "prompt-the-pitch": {
+      "type": "http",
+      "url": "https://prompt-the-pitch.bluemeadow-45cc0d52.swedencentral.azurecontainerapps.io/mcp"
+    }
+  }
+}

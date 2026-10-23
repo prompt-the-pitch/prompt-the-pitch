@@ -1,0 +1,13 @@
+# Runtime dependencies (pinned to the versions the project is tested with).
+agent-framework-core==1.23.0
+agent-framework-foundry==1.15.0
+agent-framework-openai==1.17.0
+azure-ai-projects==2.7.0
+azure-identity==1.26.0
+fastapi==0.141.1
+httpx==0.28.1
+mcp==2.3.0
+openai==3.36.1
+pydantic==2.14.1
+python-dotenv==1.2.4
+uvicorn[standard]==0.54.0

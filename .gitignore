@@ -1,0 +1,32 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local configuration (copy .env.example to .env)
+.env
+
+# Local tooling and editor files (.vscode/mcp.json is shared on purpose)
+.claude/
+.DS_Store
+node_modules/
+*.log
+
+# Videos and recordings used to make the demo video (not redistributed)
+*.mp4
+*.mov
+*.mkv
+*.mp3
+*.wav
+
+# Matches generated while using the app (the two demo matches are tracked)
+data/matches/*
+!data/matches/exl-prg-42.json
+!data/matches/crb-ben-21.json
+
+# Private working notes for the submission (pitch drafts, video script)
+submission/
+
+# Video editing material (music, voice-over, footage)
+montage_video/
