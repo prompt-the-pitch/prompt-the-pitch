@@ -632,7 +632,7 @@ WebSocket messages and the cue format are documented in [docs/interface.md](docs
 All positions are in metres on a $`105 \times 68`$ pitch. Unless stated otherwise, formulas use
 the **team frame**, where the team attacks towards $`x = 105`$. $`\sigma(z) = 1/(1+e^{-z})`$ is
 the logistic function, $`\mathbf{1}[\cdot]`$ an indicator, and
-$`\operatorname{clip}(v, a, b) = \min(b, \max(a, v))`$. Each block names the code it documents.
+$`\mathrm{clip}(v, a, b) = \min(b, \max(a, v))`$. Each block names the code it documents.
 
 ### A. Pitch frames and zones
 
@@ -658,7 +658,7 @@ Distance to the goal centre, and the angle under which the goal mouth (7.32 m wi
 ```math
 \begin{gathered}
 d = \sqrt{(105 - x)^2 + (34 - y)^2} \\
-\theta = \left| \operatorname{atan2}\!\big(7.32\,(105 - x),\ (105 - x)^2 + (y - 34)^2 - 3.66^2\big) \right|
+\theta = \left| \mathrm{atan2}\!\big(7.32\,(105 - x),\ (105 - x)^2 + (y - 34)^2 - 3.66^2\big) \right|
 \end{gathered}
 ```
 
@@ -687,7 +687,7 @@ z = -1.2 - 0.13\,d + 1.3\,\theta - 0.9\ \mathbf{1}[\text{header}] - 0.5\ \mathbf
 ```
 
 ```math
-\text{xG} = \begin{cases} 0.76 & \text{penalty} \\ \operatorname{clip}\big(\sigma(z),\ 0.01,\ 0.95\big) & \text{otherwise} \end{cases}
+\text{xG} = \begin{cases} 0.76 & \text{penalty} \\ \mathrm{clip}\big(\sigma(z),\ 0.01,\ 0.95\big) & \text{otherwise} \end{cases}
 ```
 
 Team and player xG are sums over shots. A **big chance** is a non-penalty shot with
@@ -833,7 +833,7 @@ M = 100\,\tanh\!\left(\frac{1}{0.05}\cdot\frac{\sum_{j=0}^{4} 0.75^{\,j}\,\big(\
 ```math
 \begin{gathered}
 z = 0.5\,\frac{\text{turnovers per minute}}{2.5} + 0.3\,\frac{\text{long-ball share}}{0.13} + 0.2\,\frac{\text{fouls per minute}}{0.23} \\
-\text{Chaos index} = \operatorname{clip}(50\,z,\ 0,\ 100)
+\text{Chaos index} = \mathrm{clip}(50\,z,\ 0,\ 100)
 \end{gathered}
 ```
 
@@ -1042,7 +1042,7 @@ $`\{0, 1, 2, 3, 4, 5, 10, 11, 90, 100\}`$ are always allowed. A number $`n`$ in 
 (decimal commas accepted) passes if it is close to an allowed value:
 
 ```math
-\exists\, a \in \textstyle\bigcup_v \mathcal{A}(v): \quad |n - a| \le \max(0.051,\ 0.01\,|a|)
+\exists\, a \in \bigcup_v \mathcal{A}(v): \quad |n - a| \le \max(0.051,\ 0.01\,|a|)
 ```
 
 Texts must also fit the screen:
@@ -1095,15 +1095,15 @@ a_{\text{eff}} = a\,(1 - 0.12\,f)
 
 ```math
 \begin{gathered}
-\mu_{t+1} = \operatorname{clip}\big(0.88\,\mu_t + \varepsilon_t,\ -1,\ 1\big), \qquad \varepsilon_t \sim \mathcal{N}(0,\ 0.13^2) \\
-\text{after a goal: } \mu_{\text{scorer}} \mathrel{+}= 0.3, \qquad \mu_{\text{conceder}} \mathrel{-}= 0.15
+\mu_{t+1} = \mathrm{clip}\big(0.88\,\mu_t + \varepsilon_t,\ -1,\ 1\big), \qquad \varepsilon_t \sim \mathcal{N}(0,\ 0.13^2) \\
+\text{after a goal: } \mu_{\text{scorer}} \leftarrow \mu_{\text{scorer}} + 0.3, \qquad \mu_{\text{conceder}} \leftarrow \mu_{\text{conceder}} - 0.15
 \end{gathered}
 ```
 
 **Attacking intent** combines momentum and the scoreline:
 
 ```math
-\iota = \operatorname{clip}\big(0.6\,\mu + s,\ -1,\ 1\big), \qquad s = \begin{cases} +0.4 & \text{trailing from 65'} \\ -0.3 & \text{leading from 75'} \\ 0 & \text{otherwise} \end{cases}
+\iota = \mathrm{clip}\big(0.6\,\mu + s,\ -1,\ 1\big), \qquad s = \begin{cases} +0.4 & \text{trailing from 65'} \\ -0.3 & \text{leading from 75'} \\ 0 & \text{otherwise} \end{cases}
 ```
 
 **Pressing.** The ball carrier is pressed with this probability, where $`\bar f`$ is the pressing
@@ -1132,7 +1132,7 @@ end and $`k`$ the missing players:
 
 ```math
 \begin{aligned}
-p_{\text{pass}} = \operatorname{clip}\Big(& 0.975 - 0.0065\max(0, \ell - 12) - 0.13\,P - 0.004\max(0, x_e - x) \\
+p_{\text{pass}} = \mathrm{clip}\Big(& 0.975 - 0.0065\max(0, \ell - 12) - 0.13\,P - 0.004\max(0, x_e - x) \\
 & - 0.18\,\mathbf{1}[x_e > 88] - 0.05\,\mathbf{1}[\text{high}] + \tfrac{\text{passing} - 72}{220} + \epsilon,\ \ 0.05,\ 0.98\Big)
 \end{aligned}
 ```
@@ -1148,7 +1148,7 @@ p_{\text{cross}} = 0.30 + \tfrac{\text{passing} - 72}{250} + \epsilon
 engine's xG ([C](#c-expected-goals-xg)) cannot see:
 
 ```math
-p_{\text{goal}} = \operatorname{clip}\Big(\sigma\big(-2.25 - 0.11\,d + 1.6\,\theta - 0.9\,\mathbf{1}[\text{header}]\big) \cdot \Big(1 + \tfrac{\text{finishing} - \text{goalkeeping}}{90}\Big),\ \ 0.01,\ 0.95\Big)
+p_{\text{goal}} = \mathrm{clip}\Big(\sigma\big(-2.25 - 0.11\,d + 1.6\,\theta - 0.9\,\mathbf{1}[\text{header}]\big) \cdot \Big(1 + \tfrac{\text{finishing} - \text{goalkeeping}}{90}\Big),\ \ 0.01,\ 0.95\Big)
 ```
 
 A penalty starts from 0.76 instead of the logistic term. Shots that are not goals are blocked
@@ -1186,8 +1186,8 @@ $`(b_x, b_y)`$ and possession:
 
 ```math
 \begin{aligned}
-x^{\ast} &= \operatorname{clip}\big(x_{\text{slot}} + 0.45\,(b_x - 52.5) \pm 5,\ 3,\ 102\big) && (+5 \text{ in possession},\ -5 \text{ without}) \\
-y^{\ast} &= \operatorname{clip}\big(y_{\text{slot}} + 0.25\,(b_y - y_{\text{slot}}),\ 2,\ 66\big) \\
+x^{\ast} &= \mathrm{clip}\big(x_{\text{slot}} + 0.45\,(b_x - 52.5) \pm 5,\ 3,\ 102\big) && (+5 \text{ in possession},\ -5 \text{ without}) \\
+y^{\ast} &= \mathrm{clip}\big(y_{\text{slot}} + 0.25\,(b_y - y_{\text{slot}}),\ 2,\ 66\big) \\
 \text{goalkeeper:}\quad (x^{\ast}, y^{\ast}) &= \big(5 + \max(0,\ 0.12\,(b_x - 52.5)),\ 34 + 0.2\,(b_y - 34)\big)
 \end{aligned}
 ```
