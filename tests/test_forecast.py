@@ -55,7 +55,8 @@ def test_orchestrator_forecasts_and_measures_goal_impact(match):
         return o
 
     o = asyncio.run(run())
-    assert o.forecasts and o.forecasts[-1].draw == 1.0  # The match ended 2-2.
+    # Forecasts run in parallel and may finish out of order: read the latest in match time.
+    assert o.forecasts and o.latest_forecast().draw == 1.0  # The match ended 2-2.
     goals = [m for m in o.memory if m.signal.type == "goal"]
     assert goals and all(m.signal.data["impact"]["delta"] >= 0 for m in goals if "impact" in m.signal.data)
     assert any("impact" in m.signal.data for m in goals)
